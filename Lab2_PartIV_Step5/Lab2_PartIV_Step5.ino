@@ -20,12 +20,10 @@
 // Defines ambient threshold cutoff.
 #define LIGHT_THRESH 1500
 
-// Defines frequency step, resolution, and buzz time.
-#define BUZZ_RES 12
+// Defines resolution, buzz time, and frequency step.
+#define BUZZ_RES 16
 #define BUZZ_TIME 500000
-#define BUZZ_MAX_FREQ 1000
-#define BASE_BUZZ_FREQ 100
-#define BUZZ_MULT BASE_BUZZ_FREQ / BUZZ_MAX_FREQ * pow(2, BUZZ_RES)
+#define BUZZ_FREQ 500
 
 // Defines timer configuration macros.
 #define TIMER_INCREMENT_MODE (1 << 30)
@@ -40,7 +38,7 @@ void setup() {
   *((volatile uint32_t*)GPIO_ENABLE_REG) |= (0 << PHOTORES_PIN);
 
   // Configures LED_PIN as a PWM output.
-  ledcAttach(PIEZZO_PIN, BUZZ_MAX_FREQ, BUZZ_RES);
+  ledcAttach(PIEZZO_PIN, BUZZ_FREQ, BUZZ_RES);
 
   // Creates a timer config variable and sets divider value.
   uint32_t timer_config = (TIMER_DIV_VALUE << 13);
@@ -57,28 +55,25 @@ void setup() {
 }
 
 void loop() {
-  // Creates variables to track time.
+  // Creates variables to track time and piezzo signal.
   static uint32_t threshold_time = 0;
   static uint32_t current_time = 0;
-
-  // Creates variables to track piezzo signal.
   static uint32_t freq_order = 0;
   static uint32_t duty_cycle = 0;
-
-  Serial.begin(115200);
 
   // Stores current time in variable through direct register access.
   current_time = *((volatile uint32_t *)TIMG_T0LO_REG(0));
 
   if (analogRead(PHOTORES_PIN) < LIGHT_THRESH) {
-    freq_order = ceil((current_time - threshold_time) / BUZZ_TIME);
-    duty_cycle = freq_order * BUZZ_MULT;
-    Serial.println(duty_cycle);
+    freq_order = ceil((current_time - threshold_time) / BUZZ_TIME) * BUZZ_FREQ;
+    ledcAttach(PIEZZO_PIN, freq_order, 16);
+    duty_cycle = 32768;
   } else {
     threshold_time = current_time;
     duty_cycle = 0;
   }
 
+  // 
   ledcWrite(PIEZZO_PIN, duty_cycle);
 
   // Refreshes timer so that time stays current.
