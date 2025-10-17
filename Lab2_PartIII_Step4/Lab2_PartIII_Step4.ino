@@ -1,4 +1,4 @@
-// Filename: Lab_2_Part_II_Step_3.ino
+// Filename: Lab_2_Part_III_Step_4.ino
 // Author: Yehoshua Luna
 // Date: 10/17/2025
 // Description: Changes the brightness of an external LED
@@ -15,7 +15,9 @@
 // Defines LED and photoresistor macros.
 #define LED_PIN 21
 #define PHOTORES_PIN 2
-#define INTERP_FACTOR 10000
+
+// Determines how fast the interpolation reaches the target value.
+#define INTERP_FACTOR 20000
 
 void setup() {
   // Selects PHOTORES_PIN as a general use GPIO pin.
@@ -29,14 +31,11 @@ void setup() {
 }
 
 void loop() {
-  // Variables that track interpolation and final brightness.
-  static float lerp = 0.0;
+  // Variable that tracks brightness interpolation.
   static float brightness = 0.0;
   
-  // Linearly interpolates to the analog PHOTORES reading.
-  lerp += (analogRead(PHOTORES_PIN) - lerp) / INTERP_FACTOR;
-
-  brightness = lerp * lerp / 4098; // Converts lerp to square scale
+  // Linearly interpolates to the inverse analog PHOTORES reading.
+  brightness += (4095 - analogRead(PHOTORES_PIN) - brightness) / INTERP_FACTOR;
 
   // Sends PWM to LED_PIN with duty cycle equal to brightness.
   ledcWrite(LED_PIN, brightness);
