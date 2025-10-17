@@ -9,7 +9,7 @@
 #include "soc/io_mux_reg.h" // For configuring the MUX (multiplexer)
 #include "soc/gpio_reg.h" // For direct GPIO register access
 #include "soc/gpio_periph.h" // For GPIO pin definitions
-#include "soc/timer_group_reg.h"    // For timer functions
+#include "soc/timer_group_reg.h" // For timer functions
 
 // =========== Constants ==========
 
