@@ -10,6 +10,7 @@
 #include "soc/gpio_reg.h" // For direct GPIO register access
 #include "soc/gpio_periph.h" // For GPIO pin definitions
 #include "soc/timer_group_reg.h" // For timer functions
+#include "driver/ledc.h" // For ledc functions
 
 // =========== Constants ==========
 
@@ -17,13 +18,12 @@
 #define PHOTORES_PIN 2
 #define PIEZZO_PIN 47
 
-// Defines ambient threshold cutoff.
-#define LIGHT_THRESH 1500
+#define LIGHT_THRESH 1500 // Ambient light threshold cutoff
 
-// Defines resolution, buzz time, and frequency step.
-#define BUZZ_RES 16
-#define BUZZ_TIME 500000
-#define BUZZ_FREQ 500
+#define BUZZ_RES 12 // PWM resolution for piezzo
+#define BUZZ_TIME 500000.0 // Time per frequency in microseconds. Keep floating-point for calculations!
+#define BUZZ_FREQ 500 // Base frequency multiple
+#define BUZZ_SERIES 3 // How many increments of BUZZ_FREQ tone pattern can have before stopping
 
 // Defines timer configuration macros.
 #define TIMER_INCREMENT_MODE (1 << 30)
@@ -59,21 +59,31 @@ void loop() {
   static uint32_t threshold_time = 0;
   static uint32_t current_time = 0;
   static uint32_t freq_order = 0;
+  static uint32_t last_order = 0;
   static uint32_t duty_cycle = 0;
 
   // Stores current time in variable through direct register access.
   current_time = *((volatile uint32_t *)TIMG_T0LO_REG(0));
 
-  if (analogRead(PHOTORES_PIN) < LIGHT_THRESH) {
+  if (analogRead(PHOTORES_PIN) < LIGHT_THRESH) { // Checks if light is below threshold
+    // Every BUZZ_TIME microseconds since threshold, increase frequency by BUZZ_FREQ.
     freq_order = ceil((current_time - threshold_time) / BUZZ_TIME) * BUZZ_FREQ;
-    ledcAttach(PIEZZO_PIN, freq_order, 16);
-    duty_cycle = 32768;
+    
+    // Only updates piezzo frequency when frequency changes and frequency isn't too high.
+    if (freq_order != last_order & freq_order <= BUZZ_FREQ * 3) {
+      ledc_set_freq(LEDC_LOW_SPEED_MODE, LEDC_TIMER_0, freq_order); // Sets new frequency
+    }
+
+    // Notes any new changes in frequency and sets 50% duty cycle.
+    last_order = freq_order;
+    duty_cycle = pow(2, BUZZ_RES) / 2;
   } else {
+    // Actively resets time since threshold trigger and zeros duty_cycle.
     threshold_time = current_time;
+    last_order = 0;
     duty_cycle = 0;
   }
 
-  // 
   ledcWrite(PIEZZO_PIN, duty_cycle);
 
   // Refreshes timer so that time stays current.
