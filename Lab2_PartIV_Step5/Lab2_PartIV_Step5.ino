@@ -70,7 +70,7 @@ void loop() {
     freq_order = ceil((current_time - threshold_time) / BUZZ_TIME) * BUZZ_FREQ;
     
     // Only updates piezo frequency when frequency changes and frequency isn't too high.
-    if (freq_order != last_order & freq_order <= BUZZ_FREQ * 3) {
+    if (freq_order != last_order & freq_order <= BUZZ_FREQ * BUZZ_SERIES) {
       ledc_set_freq(LEDC_LOW_SPEED_MODE, LEDC_TIMER_0, freq_order); // Sets new frequency
     }
 
