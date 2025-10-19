@@ -58,9 +58,9 @@ void loop() {
   // Creates variables to track time and piezo signal.
   static uint32_t threshold_time = 0;
   static uint32_t current_time = 0;
-  static uint32_t freq_order = 0;
-  static uint32_t last_order = 0;
-  static uint32_t duty_cycle = 0;
+  static uint16_t freq_order = 0;
+  static uint16_t last_order = 0;
+  static uint16_t duty_cycle = 0;
 
   // Stores current time in variable through direct register access.
   current_time = *((volatile uint32_t *)TIMG_T0LO_REG(0));
