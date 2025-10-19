@@ -1,4 +1,4 @@
-// Filename: Lab_2_Part_I_Step_2.ino
+// Filename: Lab_2_Part_I_Step_1.ino
 // Author: Yehoshua Luna
 // Date: 10/17/2025
 // Description: Makes an external LED blink on/off by

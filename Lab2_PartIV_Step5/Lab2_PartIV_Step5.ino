@@ -14,13 +14,13 @@
 
 // =========== Constants ==========
 
-// Defines photoresistor and piezzo macros.
+// Defines photoresistor and piezo macros.
 #define PHOTORES_PIN 2
 #define PIEZZO_PIN 47
 
 #define LIGHT_THRESH 1500 // Ambient light threshold cutoff
 
-#define BUZZ_RES 12 // PWM resolution for piezzo
+#define BUZZ_RES 12 // PWM resolution for piezo
 #define BUZZ_TIME 500000.0 // Time per frequency in microseconds. Keep floating-point for calculations!
 #define BUZZ_FREQ 500 // Base frequency multiple
 #define BUZZ_SERIES 3 // How many increments of BUZZ_FREQ tone pattern can have before stopping
@@ -55,7 +55,7 @@ void setup() {
 }
 
 void loop() {
-  // Creates variables to track time and piezzo signal.
+  // Creates variables to track time and piezo signal.
   static uint32_t threshold_time = 0;
   static uint32_t current_time = 0;
   static uint32_t freq_order = 0;
@@ -69,7 +69,7 @@ void loop() {
     // Every BUZZ_TIME microseconds since threshold, increase frequency by BUZZ_FREQ.
     freq_order = ceil((current_time - threshold_time) / BUZZ_TIME) * BUZZ_FREQ;
     
-    // Only updates piezzo frequency when frequency changes and frequency isn't too high.
+    // Only updates piezo frequency when frequency changes and frequency isn't too high.
     if (freq_order != last_order & freq_order <= BUZZ_FREQ * 3) {
       ledc_set_freq(LEDC_LOW_SPEED_MODE, LEDC_TIMER_0, freq_order); // Sets new frequency
     }
